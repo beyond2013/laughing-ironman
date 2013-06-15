@@ -7,13 +7,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import arm.PrefixTree;
 
 public class Apriori{
 	private FrequentSet L1;
-	private String[] alphabet;
+	private ItemSet<Item> alphabet;
 	private String alpha;
 	private int minSupport;
 	private CandidateSet Ck;
@@ -44,33 +45,30 @@ public class Apriori{
 		if(n==1){
 			this.getL1();
 			Lk=L1;
-			sortAlphabet();
+//			sortAlphabet();
 		}
 		else
 			if(n>1){ 
-				String temp=new String("");
 				Ck = new CandidateSet();
-				for(ItemSet I:Lk.getF()){
-					for(String st:alphabet){
-							if(Integer.parseInt(st)>I.lastMember()){
-								for(String items:I.membersOnly()){
-									temp+=items;
-									temp+=" ";
-								}								
-								temp+=st;
-					  		    ItemSet Iprime=new ItemSet(temp);
-								temp="";
-					  		   	int k=n-1;
-								ArrayList<ItemSet> subsets= ItemSet.powerset(Iprime, k);
-								if(!isSubset(Lk, subsets)){
-									break;
-								}
-								else{
-									 Ck.add(Iprime);	
-								}					  	
-							}							
-					}
-				}
+				for(ItemSet<Item> I:Lk.getF()){
+					Iterator<Item> itr = alphabet.iterator();
+					while(itr.hasNext()){
+						Item st=itr.next();
+						if(st.compareTo(I.lastMember())>0){
+							ItemSet<Item> Iprime = new ItemSet<Item>(I);
+							Iprime.addMember(st);
+							int k=n-1;
+							ArrayList<ItemSet> subsets= Iprime.powerSet(k);
+							if(!isSubset(Lk, subsets)){
+								break;
+							}
+							else{
+								 Ck.add(Iprime);	
+							}
+							
+						}// end if
+					}//end while
+				}// end for
 			}
 	}
 	
@@ -196,7 +194,7 @@ public class Apriori{
 		return result;    	 
 	}
 	
-	private void sortAlphabet(){
+	/*private void sortAlphabet(){
 		String[] str=alpha.split(" ");
 		int[] num=new int[str.length];
 		for(int i=0; i< str.length;i++){
@@ -207,7 +205,7 @@ public class Apriori{
 			str[i]=Integer.toString(num[i]);
 		}
 		alphabet=str;
-	}
+	}*/
 	
 	public void getL1(){
 		CandidateSet C1=new CandidateSet(1);
@@ -221,18 +219,21 @@ public class Apriori{
 	        	   if(key==1){
 	    			   String[] strary=text.split(" ");
 	    			   for (String st:strary){
-	    				   ItemSet I=new ItemSet(st);
+	    				   Item item = new Item(st);
+	    				   ItemSet<Item> I=new ItemSet<Item>();
+	    				   I.addMember(item);
 	    				   I.incrCount();
 	    				   C1.add(I);
-	    				   alpha+=(st);
-	    				   alpha+=" ";
+	    				   alphabet.addMember(item);
 	    			   }
 	    		   }
 	    		   else
 	    		   if(key>1){
 	    			   String[] strary=text.split(" ");
 	    			   for(String st:strary){
-	    				   ItemSet I=new ItemSet(st);
+	    				   Item item = new Item(st);
+	    				   ItemSet<Item> I=new ItemSet<Item>();
+	    				   I.addMember(item);
 	    				   if(C1.contains(I)){
 	    					   C1.incrItemSet(I);  
 	    				   }
@@ -240,8 +241,7 @@ public class Apriori{
 	    				   {
 	    					   I.incrCount();
 	    					   C1.add(I);
-	    					   alpha+=st;
-	    					   alpha+=" ";
+	    					   alphabet.addMember(item);
 	    				   }
 	    			   }
 	    		   }  

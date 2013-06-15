@@ -22,10 +22,17 @@ public class ItemSet<Item> implements Iterable {
 		count=0;
 	}
 
+	//copy constructor
+	public ItemSet(final ItemSet<Item> other){
+		this.size = other.size;
+		this.members.addAll(other.members);
+		this.count = other.count;
+	}
 	public void addMember(Item i){
 		this.members.add(i);
 		size++;
 	}
+	
 	
 	public void setCount(int arg){
 		count=arg;
@@ -83,10 +90,10 @@ public class ItemSet<Item> implements Iterable {
   * only the subsets of a specific length
   */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public  ArrayList<ItemSet> powerSet(ItemSet itemset, int size) {
+public ArrayList<ItemSet> powerSet(int size) {
     ArrayList<ItemSet> subsets= new ArrayList<ItemSet>();
 	   ArrayList<Item> set=new ArrayList<Item>();  
-	   Iterator<Item> itr= itemset.members.iterator();
+	   Iterator<Item> itr= this.members.iterator();
 	   while(itr.hasNext()){
 		   set.add(itr.next());
 		   count++;
@@ -96,7 +103,7 @@ public  ArrayList<ItemSet> powerSet(ItemSet itemset, int size) {
     LinkedHashSet power = new LinkedHashSet();
   
     //get the number of elements in the set
-    int elements = itemset.size;
+    int elements = this.size;
   
     //the number of members of a power set is 2^n
     int powerElements = (int) Math.pow(2,elements);

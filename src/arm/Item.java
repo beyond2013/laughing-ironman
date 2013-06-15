@@ -18,19 +18,16 @@ public class Item implements Comparable<Item>{
 		item = arg;
 	}
 
-	
 	public String toString(){
 		return item;
 	}
 
 	@Override
 	public int compareTo(Item arg0) {
-		// TODO Auto-generated method stub
 		int result=-1;
 		result = this.item.compareToIgnoreCase(arg0.getItem());
 		return result;
 	}
-	
 	
 	public int hashCode(){
 		return item.hashCode();
