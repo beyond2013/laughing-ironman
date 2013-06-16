@@ -124,12 +124,15 @@ public class Apriori{
 	    }
 	}
 	
+	@SuppressWarnings("unchecked")
 	private Vector<String> subset(CandidateSet C, String T){
 		Vector<String> Y= new Vector<String>();
 		PrefixTree trie = new PrefixTree(C.size());
-		for(ItemSet itemset:C.getC()){
-			for(String str:itemset.membersOnly()){
-				trie.addNumbers(str);
+		for(ItemSet<Item> itemset:C.getC()){
+			Iterator<Item> itr = itemset.iterator();
+			while(itr.hasNext()){
+				Item item = itr.next();
+				trie.addNumbers(item.toString());
 			}
 		}	
 		Y=doSubset("",toVector(T), trie);
@@ -177,35 +180,28 @@ public class Apriori{
 	private boolean isSubset(FrequentSet L, ArrayList<ItemSet> ps){
 		boolean result=false;
 		PrefixTree trie = new PrefixTree(L.size());
-  	  		for(ItemSet itemset:L.getF()){
-  	  			for(String str:itemset.membersOnly()){
-				trie.addNumbers(str);
-  	  			}
+  	  		for(ItemSet<Item> itemset:L.getF()){
+	  	  		Iterator<Item> itr = itemset.iterator();
+				while(itr.hasNext()){
+					Item item = itr.next();
+					trie.addNumbers(item.toString());
+				}
   	  		}
-			for(ItemSet IS:ps){
-				for(String st:IS.membersOnly()){
-					if(trie.containsNumbers(st))
-		    		result= true;
-		    	else 
-		    		result= false;	
+			for(ItemSet<Item> IS:ps){
+				Iterator<Item> itr = IS.iterator();
+				while(itr.hasNext()){
+					Item item = itr.next();
+					if(trie.containsNumbers(item.toString())){
+						result=true;
+					}
+					else{
+						result=false;
+					}
 				}	
 			}
 		
 		return result;    	 
 	}
-	
-	/*private void sortAlphabet(){
-		String[] str=alpha.split(" ");
-		int[] num=new int[str.length];
-		for(int i=0; i< str.length;i++){
-			num[i]=Integer.parseInt(str[i]);
-		}
-		Arrays.sort(num);
-		for(int i=0; i< str.length;i++){
-			str[i]=Integer.toString(num[i]);
-		}
-		alphabet=str;
-	}*/
 	
 	public void getL1(){
 		CandidateSet C1=new CandidateSet(1);
