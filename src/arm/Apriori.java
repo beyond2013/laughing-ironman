@@ -15,12 +15,11 @@ import arm.PrefixTree;
 public class Apriori{
 	private FrequentSet L1;
 	private ItemSet<Item> alphabet;
-	private String alpha;
 	private int minSupport;
 	private CandidateSet Ck;
 	private FrequentSet Lk;
 	
-	public Apriori(){
+	public Apriori(String pathtransfile, int minSup){
 		L1= new FrequentSet(1);
 		Ck=new CandidateSet();
 		Lk=new FrequentSet();
@@ -34,7 +33,7 @@ public class Apriori{
 			pruneJoin(k);	
 			if(k>1) checkSupport(k);
 			System.out.println(k + " Frequent Item Sets: Count");
-			for(ItemSet I:Lk.getF()){
+			for(ItemSet<Item> I:Lk.getF()){
 				System.out.println(I + " " + I.count());
 			}
 			
@@ -45,7 +44,6 @@ public class Apriori{
 		if(n==1){
 			this.getL1();
 			Lk=L1;
-//			sortAlphabet();
 		}
 		else
 			if(n>1){ 
@@ -74,7 +72,7 @@ public class Apriori{
 	
 	public void checkSupport(int n){
 		Lk= new FrequentSet();
-		for(ItemSet I:Ck.getC()){
+		for(ItemSet<Item> I:Ck.getC()){
 			I.setCount(0);
 		}
 		File file = new File("transactions.txt");
@@ -86,21 +84,21 @@ public class Apriori{
 	    	   Vector<String> CT=new Vector<String>();
 	    	   CT=subset(Ck, trans);
 	    	   //System.out.println(CT);
-	    	   ItemSet temp=new ItemSet();
+	    	   ItemSet<Item> temp=new ItemSet<Item>();
 	    	   for(int i=0;i<CT.size();i++){
 	    		   //System.out.println("CT " + CT.get(i));
 	    		   if(!CT.get(i).isEmpty()){
-	    		    temp.addMember(CT.get(i));
+	    		    temp.addMember(new Item(CT.get(i)));
 	    		    //System.out.println("temp= " + temp );
 	    		   }
 	    	   }
-	    	   for(ItemSet itemset: Ck.getC()){
+	    	   for(ItemSet<Item> itemset: Ck.getC()){
 				   if(itemset.isSubset(temp)){
 					   Ck.incrItemSet(itemset);
 				   }
 			   }   
            }
-           for(ItemSet itemset:Ck.getC()){
+           for(ItemSet<Item> itemset:Ck.getC()){
         	   if(itemset.count()>=minSupport){
         		   Lk.add(itemset);
         	   }
@@ -210,7 +208,7 @@ public class Apriori{
 	    int key=1;
 	       try {
 	           reader = new BufferedReader(new FileReader(file));
-	           String text = null; alpha= new String("");
+	           String text = null; 
 	           while ((text = reader.readLine()) != null) {  
 	        	   if(key==1){
 	    			   String[] strary=text.split(" ");
