@@ -18,12 +18,15 @@ public class Apriori{
 	private int minSupport;
 	private CandidateSet Ck;
 	private FrequentSet Lk;
-	
-	public Apriori(String pathtransfile, int minSup){
+	private String transFile; // path to the transaction file & its name 
+	private String outputFile; // path to output file & its name
+	public Apriori(String pathTransFile, int minSup, String pathOutputFile){
 		L1= new FrequentSet(1);
 		Ck=new CandidateSet();
 		Lk=new FrequentSet();
-		minSupport=2;
+		minSupport=minSup;
+		transFile=new String(pathTransFile);
+		outputFile = new String(pathOutputFile);
 	}
 	public void aprioriProcess(){
 		int k=0;
@@ -75,7 +78,7 @@ public class Apriori{
 		for(ItemSet<Item> I:Ck.getC()){
 			I.setCount(0);
 		}
-		File file = new File("transactions.txt");
+		File file = new File(transFile);
 	    BufferedReader reader = null;
        try {
            reader = new BufferedReader(new FileReader(file));
@@ -203,7 +206,7 @@ public class Apriori{
 	
 	public void getL1(){
 		CandidateSet C1=new CandidateSet(1);
-		File file = new File("transactions.txt");
+		File file = new File(transFile);
 	    BufferedReader reader = null;
 	    int key=1;
 	       try {
