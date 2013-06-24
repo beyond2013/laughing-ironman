@@ -1,5 +1,6 @@
 package arm;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
 public class Test {
@@ -29,7 +30,7 @@ public class Test {
 		
 		System.out.println("ItemSet.size B: " + B.size());
 		System.out.println("ItemSet.count B: " + B.count());
-		
+		/*
 		System.out.println("A.isSubset(B): " + A.isSubset(B));
 		System.out.println("A.equals(B): " + A.equals(B));
 		System.out.println("B.equals(A): " + B.equals(A));
@@ -47,15 +48,16 @@ public class Test {
 		Iterator<Item> itr = B.iterator();
 		while(itr.hasNext()){
 			System.out.println(itr.next());
-		}
+		}*/
 		
-		Item other1=new Item("2");
+		//Item other1=new Item("2");
 		
-		System.out.println(other1.compareTo(A.lastMember()));
+		//System.out.println(other1.compareTo(A.lastMember()));
 		/*I2.addMember("4");
 		I2.addMember("3");
 		I2.addMember("2");
 		I2.addMember("1");
+
 		
 		System.out.println("Item Set: " + I2);
 		System.out.println("ItemSet.size: " + I2.size());
@@ -75,7 +77,23 @@ public class Test {
 		System.out.println(names.subSet(names.first(), true, names.last(), true));
 		System.out.println(names2.subSet(names.first(), true, names.last(), false));*/
 		
-		
+		TrieST<ItemSet> trie = new TrieST<ItemSet>();
+		ArrayList<ItemSet> ps = new ArrayList<ItemSet>();
+		ps=A.powerSet(2);
+		System.out.println("A.powerSet(2)" + ps.toString());
+		String key=""; 
+		for (ItemSet<Item> itemset:ps){
+			trie.put(itemset.to_String(), itemset);
+		}
+		ItemSet C= new ItemSet();
+		C.addMember(new Item("1"));
+		C.addMember(new Item("4"));
+		ItemSet D= new ItemSet();
+		D.addMember(new Item("2"));
+		D.addMember(new Item("5"));
+		System.out.println("trie.get(C.to_String())" + trie.get(C.to_String()));
+		System.out.println("trie.contains(C.to_String()): " + trie.contains(C.to_String()));
+		System.out.println("trie.get(D.to_String())" + trie.get(D.to_String()));
 		
 	}
 }

@@ -18,7 +18,7 @@ public class FrequentSet {
 			size=0;
 		}
 		
-		public void add(ItemSet s){
+		public void add(ItemSet<Item> s){
 			F.add(s);
 			size++;
 		}
@@ -46,6 +46,17 @@ public class FrequentSet {
 			}
 			return result;
 			}
+		public String to_String(){
+			String result=new String("");
+			for(int count=0;count<this.size;count++){
+				result+=this.F.get(count).toString();	
+				if(count+1<this.size){
+					  result+=", ";
+				}
+			}
+			return result;
+			}
+		
 		public String toString(){
 			String result=new String("");
 			result="Frequent " + this.getk() + " Itemsets"; 
@@ -53,6 +64,7 @@ public class FrequentSet {
 			result+="{";
 			for(int count=0;count<this.size;count++){
 				result+=this.F.get(count).toString();
+				
 				if(count+1<this.size){
 					  result+=", ";
 				}

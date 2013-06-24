@@ -14,20 +14,24 @@ public class ItemSet<Item> implements Iterable<Item> {
 	 *  guarantees like TreeSet.
 	 */
 	private int size;
-	private TreeSet<Item> members;
+	// placed outside constructorZ to avoid null pointer exception
+	private TreeSet<Item> members=new TreeSet<Item>();
 	private int count;
 	
 	public ItemSet(){
 		size=0;
-		members=new TreeSet<Item>();
 		count=0;
 	}
 
-	//copy constructor
+	public ItemSet(Item i){
+		this.members.add(i);
+		size++;
+	}
+	//copy constructor 
 	public ItemSet(final ItemSet<Item> other){
 		this.size = other.size;
 		this.members.addAll(other.members);
-		this.count = other.count;
+		this.count=0;
 	}
 	public void addMember(Item i){
 		this.members.add(i);
@@ -49,7 +53,18 @@ public class ItemSet<Item> implements Iterable<Item> {
 	public int size(){
 		return this.size;
 	}
-	
+	public String to_String(){
+		String itemset=new String("");
+		int counter=0;
+		for(Item i:this.members){
+			itemset+=i.toString();
+			counter++;
+			if(counter<members.size()){
+				itemset+=" ";
+			}	
+		}
+		return itemset;
+	}
 	public String toString(){
 		String itemset=new String("");
 		int counter=0;
@@ -72,7 +87,7 @@ public class ItemSet<Item> implements Iterable<Item> {
 	
 	public boolean isSubset(ItemSet<Item> item){
 		boolean result=false;
-		if(this.members.containsAll(item.members)){
+		if(item.members.containsAll(this.members)){
 			result=true;
 		}
 		return result;
@@ -176,6 +191,13 @@ public static String intToBinary(int binary, int digits) {
 		return result;
 	}
 
+	public int hashCode(){
+		int result=3;
+		for(Item i: this.members){
+			result +=i.hashCode();
+		}
+		return result;
+	}
 	@Override
 	public Iterator<Item> iterator() {
 		// TODO Auto-generated method stub

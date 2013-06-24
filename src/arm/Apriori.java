@@ -6,41 +6,54 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import arm.PrefixTree;
+
+import stdlib.StdOut;
+
 
 public class Apriori{
 	private FrequentSet L1;
 	private ItemSet<Item> alphabet;
-	private int minSupport;
+	private int minSupport=2;
 	private CandidateSet Ck;
 	private FrequentSet Lk;
-	private String transFile; // path to the transaction file & its name 
-	private String outputFile; // path to output file & its name
-	public Apriori(String pathTransFile, int minSup, String pathOutputFile){
+	private String transFile=new String("./trans.csv");
+	private String freqItemset=new String("./freqItemset.txt");
+	
+	public Apriori(){
 		L1= new FrequentSet(1);
 		Ck=new CandidateSet();
 		Lk=new FrequentSet();
+		alphabet= new ItemSet<Item>();
+	}
+	public Apriori(String pathTransFile, String pathFreqItemset, int minSup){
+		L1= new FrequentSet(1);
+		Ck=new CandidateSet();
+		Lk=new FrequentSet();
+		alphabet= new ItemSet<Item>();
+		transFile= new String(pathTransFile);
+		freqItemset= new String(pathFreqItemset);
 		minSupport=minSup;
-		transFile=new String(pathTransFile);
-		outputFile = new String(pathOutputFile);
 	}
 	public void aprioriProcess(){
 		int k=0;
 		do
 		{
 			k++;
-			pruneJoin(k);	
+			pruneJoin(k);
+			System.out.println(k + " Candidate Item Sets: Count");
+			for(ItemSet<Item> I:Ck.getC()){
+				System.out.println(I + " " + I.count());
+			}
 			if(k>1) checkSupport(k);
 			System.out.println(k + " Frequent Item Sets: Count");
 			for(ItemSet<Item> I:Lk.getF()){
 				System.out.println(I + " " + I.count());
 			}
 			
-		}while(Ck.size()>0);
+		}while(Lk.size()>0);
 	}
 	
 	public void pruneJoin(int n){
@@ -49,27 +62,25 @@ public class Apriori{
 			Lk=L1;
 		}
 		else
-			if(n>1){ 
+			if(n>1){
 				Ck = new CandidateSet();
 				for(ItemSet<Item> I:Lk.getF()){
-					Iterator<Item> itr = alphabet.iterator();
-					while(itr.hasNext()){
-						Item st=itr.next();
+					for(Item st:alphabet){
 						if(st.compareTo(I.lastMember())>0){
-							ItemSet<Item> Iprime = new ItemSet<Item>(I);
+							ItemSet<Item> Iprime=new ItemSet<Item>(I);
 							Iprime.addMember(st);
-							int k=n-1;
-							ArrayList<ItemSet> subsets= Iprime.powerSet(k);
+							ArrayList<ItemSet> subsets= Iprime.powerSet(n-1);
 							if(!isSubset(Lk, subsets)){
-								break;
+								//System.out.println("Candidate pruned" + Iprime);
+								continue;
 							}
 							else{
-								 Ck.add(Iprime);	
-							}
-							
-						}// end if
-					}//end while
-				}// end for
+								//System.out.println("Candidate not pruned: " + Iprime);
+								Ck.add(Iprime);	
+							}					  	
+						}							
+					}
+				}
 			}
 	}
 	
@@ -86,13 +97,10 @@ public class Apriori{
            while ((trans = reader.readLine()) != null) {  
 	    	   Vector<String> CT=new Vector<String>();
 	    	   CT=subset(Ck, trans);
-	    	   //System.out.println(CT);
-	    	   ItemSet<Item> temp=new ItemSet<Item>();
+	    	   ItemSet<Item> temp=new ItemSet();
 	    	   for(int i=0;i<CT.size();i++){
-	    		   //System.out.println("CT " + CT.get(i));
 	    		   if(!CT.get(i).isEmpty()){
 	    		    temp.addMember(new Item(CT.get(i)));
-	    		    //System.out.println("temp= " + temp );
 	    		   }
 	    	   }
 	    	   for(ItemSet<Item> itemset: Ck.getC()){
@@ -124,17 +132,15 @@ public class Apriori{
 	           }
 	    }
 	}
-	
-	@SuppressWarnings("unchecked")
 	private Vector<String> subset(CandidateSet C, String T){
 		Vector<String> Y= new Vector<String>();
 		PrefixTree trie = new PrefixTree(C.size());
 		for(ItemSet<Item> itemset:C.getC()){
 			Iterator<Item> itr = itemset.iterator();
 			while(itr.hasNext()){
-				Item item = itr.next();
+				Item item= itr.next();
 				trie.addNumbers(item.toString());
-			}
+			} 
 		}	
 		Y=doSubset("",toVector(T), trie);
 		return Y;
@@ -160,7 +166,7 @@ public class Apriori{
 	    		else{
 	    			I=node+" "+T.elementAt(i);	
 	    		}
-    			if(trie.containsPrefixNumber(I))
+	    		if(trie.containsPrefixNumber(I))
 	    		{
 	    			T.remove(0);
 	    			Vector<String> temp=new Vector<String>();
@@ -177,30 +183,22 @@ public class Apriori{
     	}
 		return Y;
 	}
-	
+
 	private boolean isSubset(FrequentSet L, ArrayList<ItemSet> ps){
 		boolean result=false;
 		PrefixTree trie = new PrefixTree(L.size());
-  	  		for(ItemSet<Item> itemset:L.getF()){
-	  	  		Iterator<Item> itr = itemset.iterator();
-				while(itr.hasNext()){
-					Item item = itr.next();
-					trie.addNumbers(item.toString());
-				}
-  	  		}
-			for(ItemSet<Item> IS:ps){
-				Iterator<Item> itr = IS.iterator();
-				while(itr.hasNext()){
-					Item item = itr.next();
-					if(trie.containsNumbers(item.toString())){
-						result=true;
-					}
-					else{
-						result=false;
-					}
-				}	
+		for(ItemSet itemset:L.getF()){
+			trie.addNumbers(itemset.to_String());
+		}
+		for(ItemSet IS:ps){
+			if(trie.containsNumbers(IS.to_String())){
+				result=true;
 			}
-		
+			else{
+				result=false;
+				break;
+			}	
+		}
 		return result;    	 
 	}
 	
@@ -216,21 +214,17 @@ public class Apriori{
 	        	   if(key==1){
 	    			   String[] strary=text.split(" ");
 	    			   for (String st:strary){
-	    				   Item item = new Item(st);
-	    				   ItemSet<Item> I=new ItemSet<Item>();
-	    				   I.addMember(item);
+	    				   ItemSet<Item> I=new ItemSet(new Item(st));
 	    				   I.incrCount();
 	    				   C1.add(I);
-	    				   alphabet.addMember(item);
+	    				   alphabet.addMember(new Item(st));
 	    			   }
 	    		   }
 	    		   else
 	    		   if(key>1){
 	    			   String[] strary=text.split(" ");
 	    			   for(String st:strary){
-	    				   Item item = new Item(st);
-	    				   ItemSet<Item> I=new ItemSet<Item>();
-	    				   I.addMember(item);
+	    				   ItemSet<Item> I=new ItemSet(new Item(st));
 	    				   if(C1.contains(I)){
 	    					   C1.incrItemSet(I);  
 	    				   }
@@ -238,7 +232,7 @@ public class Apriori{
 	    				   {
 	    					   I.incrCount();
 	    					   C1.add(I);
-	    					   alphabet.addMember(item);
+	    					   alphabet.addMember(new Item(st));
 	    				   }
 	    			   }
 	    		   }  
@@ -280,4 +274,9 @@ public class Apriori{
 	    	return vt;
 	    }
 	
+	  public static void main(String[] args){
+		  
+		  Apriori obj = new Apriori();
+		  obj.aprioriProcess();
+	  }
 }
