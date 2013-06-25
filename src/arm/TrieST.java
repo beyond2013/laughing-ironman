@@ -54,6 +54,9 @@ public class TrieST<Value> {
         return get(x.next[c], key, d+1);
     }
 
+    public Node getRoot(){
+    	return this.root;
+    }
    /****************************************************
     * Insert key-value pair into the symbol table.
     ****************************************************/

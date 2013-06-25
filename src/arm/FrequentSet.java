@@ -64,7 +64,8 @@ public class FrequentSet {
 			result+="{";
 			for(int count=0;count<this.size;count++){
 				result+=this.F.get(count).toString();
-				
+				result+=": ";
+				result+=this.F.get(count).count();	
 				if(count+1<this.size){
 					  result+=", ";
 				}

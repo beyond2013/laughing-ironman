@@ -1,16 +1,12 @@
 package arm;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import stdlib.StdOut;
+import stdlib.In;
+import stdlib.Out;
 
 
 public class Apriori{
@@ -39,21 +35,18 @@ public class Apriori{
 	}
 	public void aprioriProcess(){
 		int k=0;
+		StringBuilder results= new StringBuilder();
 		do
 		{
 			k++;
 			pruneJoin(k);
-			System.out.println(k + " Candidate Item Sets: Count");
-			for(ItemSet<Item> I:Ck.getC()){
-				System.out.println(I + " " + I.count());
-			}
+			results.append(Ck.toString());
+			results.append("\n");
 			if(k>1) checkSupport(k);
-			System.out.println(k + " Frequent Item Sets: Count");
-			for(ItemSet<Item> I:Lk.getF()){
-				System.out.println(I + " " + I.count());
-			}
-			
-		}while(Lk.size()>0);
+			results.append(Lk.toString());
+			results.append("\n");
+		}while(Ck.size()>0);
+		writeResults(results.toString());
 	}
 	
 	public void pruneJoin(int n){
@@ -63,7 +56,7 @@ public class Apriori{
 		}
 		else
 			if(n>1){
-				Ck = new CandidateSet();
+				Ck = new CandidateSet(n);
 				for(ItemSet<Item> I:Lk.getF()){
 					for(Item st:alphabet){
 						if(st.compareTo(I.lastMember())>0){
@@ -71,11 +64,9 @@ public class Apriori{
 							Iprime.addMember(st);
 							ArrayList<ItemSet> subsets= Iprime.powerSet(n-1);
 							if(!isSubset(Lk, subsets)){
-								//System.out.println("Candidate pruned" + Iprime);
 								continue;
 							}
 							else{
-								//System.out.println("Candidate not pruned: " + Iprime);
 								Ck.add(Iprime);	
 							}					  	
 						}							
@@ -83,54 +74,34 @@ public class Apriori{
 				}
 			}
 	}
-	
+
 	public void checkSupport(int n){
-		Lk= new FrequentSet();
+		Lk= new FrequentSet(n);
 		for(ItemSet<Item> I:Ck.getC()){
 			I.setCount(0);
 		}
-		File file = new File(transFile);
-	    BufferedReader reader = null;
-       try {
-           reader = new BufferedReader(new FileReader(file));
-           String trans = null; 
-           while ((trans = reader.readLine()) != null) {  
-	    	   Vector<String> CT=new Vector<String>();
-	    	   CT=subset(Ck, trans);
-	    	   ItemSet<Item> temp=new ItemSet();
-	    	   for(int i=0;i<CT.size();i++){
-	    		   if(!CT.get(i).isEmpty()){
-	    		    temp.addMember(new Item(CT.get(i)));
-	    		   }
-	    	   }
-	    	   for(ItemSet<Item> itemset: Ck.getC()){
-				   if(itemset.isSubset(temp)){
-					   Ck.incrItemSet(itemset);
-				   }
-			   }   
-           }
-           for(ItemSet<Item> itemset:Ck.getC()){
-        	   if(itemset.count()>=minSupport){
-        		   Lk.add(itemset);
-        	   }
-           }
-        }  
-	    catch (FileNotFoundException e) {
-           e.printStackTrace();
+		In in = new In(transFile);
+		String trans = null; 
+		while ((trans = in.readLine()) != null) {  
+			Vector<String> CT=new Vector<String>();
+			CT=subset(Ck, trans);
+			ItemSet<Item> temp=new ItemSet<Item>();
+			for(int i=0;i<CT.size();i++){
+				if(!CT.get(i).isEmpty()){
+					temp.addMember(new Item(CT.get(i)));
+				}
+			}
+			for(ItemSet<Item> itemset: Ck.getC()){
+				if(itemset.isSubset(temp)){
+					Ck.incrItemSet(itemset);
+				}
+			}   
 		}
-	    catch (IOException e) {
-		   e.printStackTrace();
+		for(ItemSet<Item> itemset:Ck.getC()){
+			if(itemset.count()>=minSupport){
+				Lk.add(itemset);
+			}
 		}
-	    finally{
-	           try {
-	               if (reader != null) {
-	                   reader.close();
-	               }
-	           }
-	           catch (IOException e) {
-	               e.printStackTrace();
-	           }
-	    }
 	}
 	private Vector<String> subset(CandidateSet C, String T){
 		Vector<String> Y= new Vector<String>();
@@ -187,10 +158,10 @@ public class Apriori{
 	private boolean isSubset(FrequentSet L, ArrayList<ItemSet> ps){
 		boolean result=false;
 		PrefixTree trie = new PrefixTree(L.size());
-		for(ItemSet itemset:L.getF()){
+		for(ItemSet<Item> itemset:L.getF()){
 			trie.addNumbers(itemset.to_String());
 		}
-		for(ItemSet IS:ps){
+		for(ItemSet<Item> IS:ps){
 			if(trie.containsNumbers(IS.to_String())){
 				result=true;
 			}
@@ -204,65 +175,45 @@ public class Apriori{
 	
 	public void getL1(){
 		CandidateSet C1=new CandidateSet(1);
-		File file = new File(transFile);
-	    BufferedReader reader = null;
-	    int key=1;
-	       try {
-	           reader = new BufferedReader(new FileReader(file));
-	           String text = null; 
-	           while ((text = reader.readLine()) != null) {  
-	        	   if(key==1){
-	    			   String[] strary=text.split(" ");
-	    			   for (String st:strary){
-	    				   ItemSet<Item> I=new ItemSet(new Item(st));
-	    				   I.incrCount();
-	    				   C1.add(I);
-	    				   alphabet.addMember(new Item(st));
-	    			   }
-	    		   }
-	    		   else
-	    		   if(key>1){
-	    			   String[] strary=text.split(" ");
-	    			   for(String st:strary){
-	    				   ItemSet<Item> I=new ItemSet(new Item(st));
-	    				   if(C1.contains(I)){
-	    					   C1.incrItemSet(I);  
-	    				   }
-	    				   else
-	    				   {
-	    					   I.incrCount();
-	    					   C1.add(I);
-	    					   alphabet.addMember(new Item(st));
-	    				   }
-	    			   }
-	    		   }  
-	        	 key++;
-	           }
-	           Vector<ItemSet> candidates = new Vector<ItemSet>();
-	           candidates=C1.getC();
-	           Ck=C1;
-	           for(int count=0;count<candidates.size();count++){  
-	        	   if(candidates.get(count).count()>=minSupport){
-	        		   L1.add(candidates.get(count));
-	        	   }
-	           }
-	       } 
-	       catch (FileNotFoundException e) {
-	           e.printStackTrace();
-	       } 
-	       catch (IOException e) {
-	           e.printStackTrace();
-	       }
-	       finally {
-	           try {
-	               if (reader != null) {
-	                   reader.close();
-	               }
-	           }
-	           catch (IOException e) {
-	               e.printStackTrace();
-	           }
-	       }
+		In in=new In(transFile);
+		int key=1;
+		String text = null; 
+		while ((text = in.readLine()) != null) {  
+			if(key==1){
+				String[] strary=text.split(" ");
+				for (String st:strary){
+					ItemSet<Item> I=new ItemSet(new Item(st));
+					I.incrCount();
+					C1.add(I);
+					alphabet.addMember(new Item(st));
+				}
+			}
+			else
+				if(key>1){
+					String[] strary=text.split(" ");
+					for(String st:strary){
+						ItemSet<Item> I=new ItemSet(new Item(st));
+						if(C1.contains(I)){
+							C1.incrItemSet(I);  
+						}
+						else
+						{
+							I.incrCount();
+							C1.add(I);
+							alphabet.addMember(new Item(st));
+						}
+					}
+				}  
+			key++;
+		}
+		Vector<ItemSet> candidates = new Vector<ItemSet>();
+		candidates=C1.getC();
+		Ck=C1;
+		for(int count=0;count<candidates.size();count++){  
+			if(candidates.get(count).count()>=minSupport){
+				L1.add(candidates.get(count));
+			}
+		}
 	}
 	
 	  private  Vector<String> toVector(String st)
@@ -274,6 +225,10 @@ public class Apriori{
 	    	return vt;
 	    }
 	
+	  private void writeResults(String str){
+		  Out out= new Out(freqItemset);
+		  out.println(str);
+	  }
 	  public static void main(String[] args){
 		  
 		  Apriori obj = new Apriori();

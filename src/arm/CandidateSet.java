@@ -82,8 +82,8 @@ public class CandidateSet  {
 	result+="{";
 	for(int count=0;count<this.size;count++){
 		result+=this.C.get(count).toString();
-		result+=": ";
-		result+=this.C.get(count).count();
+		/*result+=": ";
+		result+=this.C.get(count).count();*/
 		if(count+1<this.size){
 		  result+=", ";
 		}

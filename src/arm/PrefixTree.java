@@ -144,7 +144,7 @@ public class PrefixTree extends AbstractCollection<String> implements Set<String
      //   private int N;
     	final int x=N+2;
     
-		public TrieNode[] children = new TrieNode[1000];
+		public TrieNode[] children = new TrieNode[256];
         
         // set to true if this node represents the end of a word
         public boolean wholeWord = false;
